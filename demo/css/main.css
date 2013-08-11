@@ -1,0 +1,86 @@
+@font-face{ 
+	font-family: 'Voltaire';
+	src: url('../fonts/Voltaire.eot');
+	src: url('../fonts/Voltaire.eot?#iefix') format('embedded-opentype'),
+	     url('../fonts/Voltaire.woff') format('woff'),
+	     url('../fonts/Voltaire.ttf') format('truetype'),
+	     url('../fonts/Voltaire.svg#webfont') format('svg');
+}
+
+body {
+	font-family: 'Baskerville', 'Book Antiqua', 'Georgia';
+	font-size: 16px;
+	color: #353535;
+	padding: 2em 1em;
+	width: 100%;
+	min-width: 32em;
+	max-width: 48em;
+	margin: 0 auto;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+h1, h2 {
+	font-family: 'Voltaire';
+	font-weight: normal;
+}
+
+textarea {
+	width: 100%;
+	padding: 0.5em;
+	font-family: 'Source Code Pro', monospace;
+	font-size: inherit;
+	border: 1px solid #eee;
+	box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1);
+	background-color: #fdfdfd;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	resize: vertical;
+	height: 10em;
+	margin: 0 0 1em 0;
+}
+
+label {
+	margin: 0 0 0 1em;
+}
+
+input[type="text"] {
+	width: 1em;
+	font-family: inherit;
+	font-size: inherit;
+}
+
+.button-group {
+	margin: 0 1em 0.5em 0;
+	float: left;
+}
+
+.button {
+	float: left;
+	display: block;
+	padding: 0.5em;
+	background-color: #eee;
+	border-top: 1px solid rgba(255,255,255,0.1);
+	border-left: 1px solid rgba(255,255,255,0.1);
+	border-right: 1px solid rgba(0,0,0,0.1);
+	border-bottom: 1px solid rgba(0,0,0,0.1);
+	cursor: pointer;
+}
+
+.button:first-child {
+	border-radius: 0.2em 0 0 0.2em;
+}
+
+.button:last-child {
+	border-radius: 0 0.2em 0.2em 0;
+}
+
+.selected {
+	border-top: 1px solid rgba(0,0,0,0.1);
+	border-left: 1px solid rgba(0,0,0,0.1);
+	border-right: 1px solid rgba(255,255,255,0.1);
+	border-bottom: 1px solid rgba(255,255,255,0.1);
+	color: white;
+	background-color: #729d34;
+}

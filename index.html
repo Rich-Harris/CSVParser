@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang='en-GB'>
+<head>
+	<meta charset='utf-8'>
+	<title>CSV Parser</title>
+
+	<!-- CSS -->
+	<link rel='stylesheet' href='demo/css/main.css'>
+	<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+	<h1>CSV Parser</h1>
+
+	<div id='container'></div>
+
+	<script id='tpl' type='text/Ractive'>
+		<h2>Input</h2>
+
+		<div class='button-group'>
+			<span on-tap='setDelimiter:comma' class='button {{ delimiter === "comma" ? "selected" : "" }}'>comma</span>
+			<span on-tap='setDelimiter:tab'   class='button {{ delimiter === "tab"   ? "selected" : "" }}'>tab</span>
+			<span on-tap='setDelimiter:space' class='button {{ delimiter === "space" ? "selected" : "" }}'>space</span>
+		</div>
+
+		<div class='button-group'>
+			<span on-tap='setQualifier:double' class='button {{ qualifier === "double" ? "selected" : "" }}'>&quot;</span>
+			<span on-tap='setQualifier:single' class='button {{ qualifier === "single" ? "selected" : "" }}'>&apos;</span>
+		</div>
+
+		<textarea value='{{input}}' placeholder='Paste in some CSV data'></textarea>
+
+
+		<h2>Output</h2>
+
+		<div class='button-group'>
+			<span on-tap='setOutput:json'  class='button {{ outputType === "json"  ? "selected" : "" }}'>json</span>
+			<span on-tap='setOutput:array' class='button {{ outputType === "array" ? "selected" : "" }}'>array</span>
+		</div>
+
+		<textarea value='{{ parse( input, delimiter, qualifier, outputType ) }}'></textarea>
+	</script>
+
+	<!-- JS -->
+	<script src='demo/js/lib/Ractive.js'></script>
+	<script src='build/CSVParser.js'></script>
+	<script>
+		var parser, ractive, delimiters, qualifiers;
+
+		parser = new CSVParser();
+
+		delimiters = {
+			comma: ',',
+			tab: '\t',
+			space: ' '
+		};
+
+		qualifiers = {
+			double: '"',
+			single: "'"
+		};
+
+		ractive = new Ractive({
+			el: 'container',
+			template: '#tpl',
+			data: {
+				delimiter: 'comma',
+				qualifier: 'double',
+				outputType: 'json',
+
+				input: 'one,two,three,four\n1,2,3,4',
+
+				parse: function ( input, delimiter, qualifier, outputType ) {
+					var output = parser
+						.delimiter( delimiters[ delimiter ] )
+						.qualifier( qualifiers[ qualifier ] )
+						.data( input )
+						[ outputType ]();
+
+					return JSON.stringify( output, null, '  ' );
+				}
+			},
+			debug: true
+		});
+
+		ractive.on({
+			setDelimiter: function ( event, delimiter ) {
+				this.set( 'delimiter', delimiter );
+			},
+
+			setQualifier: function ( event, qualifier ) {
+				this.set( 'qualifier', qualifier );
+			},
+
+			setOutput: function ( event, type ) {
+				this.set( 'outputType', type );
+			},
+
+			input: function ( event ) {
+				var input;
+
+				input = event.node.value;
+				parser.data( input );
+
+				if ( this.get( 'outputType' ) === 'array' ) {
+					this.set( 'output', JSON.stringify( parser.array(), null, '  ' ) );
+				} else {
+					this.set( 'output', JSON.stringify( parser.json(), null, '  ' ) );
+				}
+			}
+		});
+
+	</script>
+</body>
+</html>

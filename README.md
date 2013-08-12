@@ -1,8 +1,6 @@
 CSVParser.js
 ============
 
-Works in browsers (optionally as an AMD module) or on the server.
-
 Usage
 -----
 
@@ -21,6 +19,13 @@ parser.data();             // get current CSV data
 parser.delimiter();        // get the current delimiter (defaults to ',')
 parser.qualifier();        // get the current qualifier (defaults to '"')
 ```
+
+Compatibility
+-------------
+
+Works in browsers (optionally as an AMD module) or on the server. Browser support chart courtesy of [testling-ci](https://ci.testling.com/):
+
+[![browser support](https://ci.testling.com/Rich-Harris/CSVParser.png)](https://ci.testling.com/Rich-Harris/CSVParser)
 
 License
 -------

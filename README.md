@@ -27,6 +27,8 @@ Works in browsers (optionally as an AMD module) or on the server. Browser suppor
 
 [![browser support](https://ci.testling.com/Rich-Harris/CSVParser.png)](https://ci.testling.com/Rich-Harris/CSVParser)
 
+The tests use the legacy build, which include [json2.js](https://github.com/douglascrockford/JSON-js/) - use this if you need to support older browsers and are not already including json2.js.
+
 License
 -------
 

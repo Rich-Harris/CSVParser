@@ -26,6 +26,16 @@ h1, h2 {
 	font-weight: normal;
 }
 
+h1 {
+	text-align: center;
+	border-bottom: 2px solid #BF6718;
+	font-size: 2.8em;
+}
+
+h2 {
+	margin: 0 0 0.5em 0;
+}
+
 textarea {
 	width: 100%;
 	padding: 0.5em;
@@ -39,6 +49,16 @@ textarea {
 	resize: vertical;
 	height: 10em;
 	margin: 0 0 1em 0;
+}
+
+textarea:focus {
+	outline: none;
+	background-color: #f4f4f4;
+}
+
+.error {
+	background-color: rgb(255,240,240);
+	color: rgb(160,0,0);
 }
 
 label {
@@ -83,4 +103,43 @@ input[type="text"] {
 	border-bottom: 1px solid rgba(255,255,255,0.1);
 	color: white;
 	background-color: #BF6718;
+}
+
+
+.forkme {
+	position: absolute;
+	top: 0;
+	left: 0;
+	border: 0;
+}
+
+.forkme img {
+	border: 0;
+}
+
+.forkme:hover {
+	position: absolute;
+
+	-webkit-transform: translate(0,0);
+	-moz-transform: translate(0,0);
+	-ms-transform: translate(0,0);
+	-o-transform: translate(0,0);
+	transform: translate(0,0);
+}
+
+a {
+	color: #BF6718;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:visited {
+	color: #BF6718;
+}
+
+p {
+	text-align: center;
 }

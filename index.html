@@ -12,46 +12,52 @@
 <body>
 	<h1>CSV Parser</h1>
 
+	<a class='forkme' href='https://github.com/Rich-Harris/CSVParser'><img src='demo/forkme.png' alt='Fork me on GitHub'></a>
+
+	<p><a href='https://github.com/Rich-Harris/CSVParser'>Download the code from GitHub</a> for use in your own projects. Works on server or client. MIT licensed.</p>
+
 	<div id='container'></div>
+
+	<p class='copyright'>Copyright &copy; 2013 <a href='http://rich-harris.co.uk'>Rich Harris</a> (<a href='http://twitter.com/rich_harris'>@rich_harris</a>)</p>
 
 	<script id='tpl' type='text/Ractive'>
 		<h2>Input</h2>
 
 		<div class='button-group'>
-			<span on-tap='setDelimiter:comma' class='button {{ delimiter === "comma" ? "selected" : "" }}'>comma</span>
-			<span on-tap='setDelimiter:tab'   class='button {{ delimiter === "tab"   ? "selected" : "" }}'>tab</span>
-			<span on-tap='setDelimiter:space' class='button {{ delimiter === "space" ? "selected" : "" }}'>space</span>
+			<span on-click='setDelimiter:comma' class='button {{ delimiter === "comma" ? "selected" : "" }}'>comma</span>
+			<span on-click='setDelimiter:tab'   class='button {{ delimiter === "tab"   ? "selected" : "" }}'>tab</span>
+			<span on-click='setDelimiter:space' class='button {{ delimiter === "space" ? "selected" : "" }}'>space</span>
 		</div>
 
 		<div class='button-group'>
-			<span on-tap='setQualifier:double' class='button {{ qualifier === "double" ? "selected" : "" }}'>&quot;</span>
-			<span on-tap='setQualifier:single' class='button {{ qualifier === "single" ? "selected" : "" }}'>&apos;</span>
+			<span on-click='setQualifier:double' class='button {{ qualifier === "double" ? "selected" : "" }}'>&quot;</span>
+			<span on-click='setQualifier:single' class='button {{ qualifier === "single" ? "selected" : "" }}'>&apos;</span>
 		</div>
 
-		<textarea value='{{input}}' placeholder='Paste in some CSV data'></textarea>
+		<textarea on-paste='autoDelimiter' on-tab='insertTab' value='{{input}}' placeholder='Paste in some CSV data' spellcheck='false'></textarea>
 
 
 		<h2>Output</h2>
 
 		<div class='button-group'>
-			<span on-tap='setOutput:json'  class='button {{ outputType === "json"  ? "selected" : "" }}'>json</span>
-			<span on-tap='setOutput:array' class='button {{ outputType === "array" ? "selected" : "" }}'>array</span>
+			<span on-click='setOutput:json'  class='button {{ outputType === "json"  ? "selected" : "" }}'>json</span>
+			<span on-click='setOutput:array' class='button {{ outputType === "array" ? "selected" : "" }}'>array</span>
 		</div>
 
-		<textarea value='{{ parse( input, delimiter, qualifier, outputType ) }}'></textarea>
+		<textarea readonly class='{{ error ? "error" : "" }}' value='{{ parse( input, delimiter, qualifier, outputType ) }}' spellcheck='false'></textarea>
 	</script>
 
 	<!-- JS -->
-	<script src='demo/js/lib/Ractive.js'></script>
+	<script src='demo/js/Ractive-legacy.min.js'></script>
 	<script src='build/CSVParser.js'></script>
 	<script>
-		var parser, ractive, delimiters, qualifiers;
+		var parser, ractive, delimiters, patterns, qualifiers, worker, getDelimiter;
 
 		parser = new CSVParser();
 
 		delimiters = {
 			comma: ',',
-			tab: '\t',
+			tab: '	',
 			space: ' '
 		};
 
@@ -71,19 +77,46 @@
 				input: 'one,two,three,four\n1,2,3,4',
 
 				parse: function ( input, delimiter, qualifier, outputType ) {
-					var output = parser
-						.delimiter( delimiters[ delimiter ] )
-						.qualifier( qualifiers[ qualifier ] )
-						.data( input )
-						[ outputType ]();
+					var output;
+
+					try {
+						output = parser
+							.delimiter( delimiters[ delimiter ] )
+							.qualifier( qualifiers[ qualifier ] )
+							.data( input )
+							[ outputType ]();
+
+						this.set( 'error', false );
+					} catch ( err ) {
+						this.set( 'error', true );
+						return 'Error parsing data: ' + err.message || err;
+					}
 
 					return JSON.stringify( output, null, '  ' );
 				}
-			},
-			debug: true
+			}
 		});
 
 		ractive.on({
+			autoDelimiter: function ( event ) {
+				setTimeout( function () {
+					getDelimiter( parser, event.node.value );
+				}, 0 );
+			},
+
+			insertTab: function ( event ) {
+				var input, pos, before, after;
+
+				input = event.node.value;
+				pos = event.node.selectionStart;
+
+				before = input.substr( 0, pos );
+				after = input.substring( event.node.selectionEnd );
+
+				this.set( 'input', before + '\t' + after );
+				event.node.selectionStart = event.node.selectionEnd = pos + 1;
+			},
+
 			setDelimiter: function ( event, delimiter ) {
 				this.set( 'delimiter', delimiter );
 			},
@@ -94,21 +127,74 @@
 
 			setOutput: function ( event, type ) {
 				this.set( 'outputType', type );
-			},
-
-			input: function ( event ) {
-				var input;
-
-				input = event.node.value;
-				parser.data( input );
-
-				if ( this.get( 'outputType' ) === 'array' ) {
-					this.set( 'output', JSON.stringify( parser.array(), null, '  ' ) );
-				} else {
-					this.set( 'output', JSON.stringify( parser.json(), null, '  ' ) );
-				}
 			}
 		});
+
+		// persist to localStorage
+		try {
+			window.localStorage;
+
+			[ 'input', 'delimiter', 'qualifier', 'outputType' ].forEach( function ( property ) {
+				var value = window.localStorage.getItem( property );
+
+				if ( value ) {
+					ractive.set( property, value );
+				}
+
+				ractive.observe( property, function ( value ) {
+					window.localStorage.setItem( property, value );
+				});
+			});
+		} catch ( err ) {}
+
+		// Automatic delimiter detection - try to delegate this to a worker, in
+		// case there's a large amount of data
+		try {
+			worker = new Worker( 'demo/js/getDelimiter.js' );
+			
+			worker.addEventListener( 'message', function ( event ) {
+				ractive.set( 'delimiter', event.data );
+			});
+
+			worker.postMessage({ test: true });
+
+			getDelimiter = function ( parser, input ) {
+				worker.postMessage({
+					data: input,
+					qualifier: parser.qualifier()
+				});
+			};
+
+			throw new Error();
+		}
+
+		catch ( err ) {
+			worker = null;
+
+			getDelimiter = function ( parser, input ) {
+				var max = 0, winner = 'comma';
+
+				[ 'comma', 'tab', 'space' ].forEach( function ( delimiter ) {
+					var array, cellCount;
+
+					try {
+						array = parser.delimiter( delimiters[ delimiter ] ).array();
+						cellCount = array.length * array[0].length;
+					}
+
+					catch ( err ) {
+						cellCount = 0;
+					}
+
+					if ( cellCount > max ) {
+						max = cellCount;
+						winner = delimiter;
+					}
+				});
+
+				ractive.set( 'delimiter', winner );
+			};
+		}
 
 	</script>
 </body>

@@ -159,6 +159,10 @@
 		rowLength = row.length;
 
 		while ( getStringMatch( tokenizer, '\n' ) && ( row = getRow( tokenizer ) ) ) {
+			while ( row.length < rowLength ) {
+				row[ row.length ] = '';
+			}
+
 			if ( row.length !== rowLength ) {
 				throw new Error( 'Malformed data - all rows must have the same number of cells' );
 			}

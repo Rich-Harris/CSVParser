@@ -285,6 +285,21 @@
 
 	CSVParser.VERSION = VERSION;
 
+	// shim for oldIE
+	if ( !Array.prototype.map ) {
+		Array.prototype.map = function ( mapper, context ) {
+			var i, len, mapped = [];
+
+			for ( i=0, len=this.length; i<len; i+=1 ) {
+				if ( this.hasOwnProperty( i ) ) {
+					mapped[i] = mapper.call( context, this[i], i, this );
+				}
+			}
+
+			return mapped;
+		};
+	}
+
 	// export as CommonJS module...
 	if ( typeof module !== 'undefined' && module.exports ) {
 		module.exports = CSVParser;

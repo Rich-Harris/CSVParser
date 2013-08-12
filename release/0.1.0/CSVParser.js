@@ -159,6 +159,10 @@
 		rowLength = row.length;
 
 		while ( getStringMatch( tokenizer, '\n' ) && ( row = getRow( tokenizer ) ) ) {
+			while ( row.length < rowLength ) {
+				row[ row.length ] = '';
+			}
+
 			if ( row.length !== rowLength ) {
 				throw new Error( 'Malformed data - all rows must have the same number of cells' );
 			}
@@ -280,6 +284,21 @@
 	};
 
 	CSVParser.VERSION = VERSION;
+
+	// shim for oldIE
+	if ( !Array.prototype.map ) {
+		Array.prototype.map = function ( mapper, context ) {
+			var i, len, mapped = [];
+
+			for ( i=0, len=this.length; i<len; i+=1 ) {
+				if ( this.hasOwnProperty( i ) ) {
+					mapped[i] = mapper.call( context, this[i], i, this );
+				}
+			}
+
+			return mapped;
+		};
+	}
 
 	// export as CommonJS module...
 	if ( typeof module !== 'undefined' && module.exports ) {

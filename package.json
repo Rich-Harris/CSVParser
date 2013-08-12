@@ -2,12 +2,13 @@
   "name": "csvparser",
   "description": "A CSV parser",
   "homepage": "http://rich-harris.co.uk/CSVParser",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-copy": "~0.4.1",
     "grunt-contrib-uglify": "~0.2.2",
-    "grunt-contrib-qunit": "~0.2.2"
+    "grunt-contrib-qunit": "~0.2.2",
+    "grunt-contrib-concat": "~0.3.0"
   },
   "author": {
     "name": "Rich Harris"
@@ -34,21 +35,21 @@
     ]
   },
   "testling": {
-  	"html": "test/index.html",
-  	"browsers": [
-  	  "ie/6..latest",
-  	  "chrome/10.0",
-  	  "chrome/15.0",
-  	  "chrome/23..canary",
-  	  "firefox/3.6",
-  	  "firefox/7.0",
-  	  "firefox/12.0",
-  	  "firefox/18.0..nightly",
-  	  "opera/10..next",
-  	  "safari/4..latest",
-  	  "iphone/6.0",
-  	  "ipad/6.0",
-  	  "android-browser/4.2"
-  	]
+    "html": "test/index.html",
+    "browsers": [
+      "ie/6..latest",
+      "chrome/10.0",
+      "chrome/15.0",
+      "chrome/23..canary",
+      "firefox/3.6",
+      "firefox/7.0",
+      "firefox/12.0",
+      "firefox/18.0..nightly",
+      "opera/10..next",
+      "safari/4..latest",
+      "iphone/6.0",
+      "ipad/6.0",
+      "android-browser/4.2"
+    ]
   }
 }

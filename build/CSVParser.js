@@ -1,4 +1,4 @@
-// CSVParser.js v0.1.0
+// CSVParser.js v0.1.1
 // ===================
 //
 // Usage examples:

@@ -1,12 +1,37 @@
 {
   "name": "csvparser",
   "description": "A CSV parser",
+  "homepage": "http://rich-harris.co.uk/CSVParser",
   "version": "0.1.0",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-copy": "~0.4.1",
     "grunt-contrib-uglify": "~0.2.2",
     "grunt-contrib-qunit": "~0.2.2"
+  },
+  "author": {
+    "name": "Rich Harris"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Rich-Harris/CSVParser.git"
+  },
+  "github": "https://github.com/Rich-Harris/CSVParser",
+  "bugs": {
+    "web": "https://github.com/Rich-Harris/CSVParser/issues"
+  },
+  "jam": {
+    "main": "CSVParser.js",
+    "include": [
+      "CSVParser.js",
+      "CSVParser.min.js",
+      "README.md"
+    ]
   },
   "testling": {
   	"html": "test/index.html",

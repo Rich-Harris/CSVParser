@@ -23,7 +23,7 @@ parser.qualifier();        // get the current qualifier (defaults to '"')
 Compatibility
 -------------
 
-Works in browsers (optionally as an AMD module) or on the server. Browser support chart courtesy of [testling-ci](https://ci.testling.com/):
+Works in browsers (optionally as an AMD module) or on the server. Browser support chart courtesy of [testling-ci](https://ci.testling.com/) (take any red flags with a pinch of salt, it's been tested succcessfully in all these browsers - sometimes Testling times out!):
 
 [![browser support](https://ci.testling.com/Rich-Harris/CSVParser.png)](https://ci.testling.com/Rich-Harris/CSVParser)
 

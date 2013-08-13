@@ -5,7 +5,7 @@ Usage
 -----
 
 ```js
-parser = new Parser( csvData ); // string (optional)
+parser = new Parser( csvData ); // optional. string representing contents of .csv file
 
 parser.array();                 // get an array of arrays representing the data
 parser.json();                  // get an array of objects, using the first row as keys

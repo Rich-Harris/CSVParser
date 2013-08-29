@@ -100,7 +100,7 @@
 				return this._data;
 			}
 
-			this._data = data.replace( '\r\n', NEWLINE );
+			this._data = data.replace( /\r\n/g, NEWLINE );
 			this._arrayDirty = this._jsonDirty = true;
 
 			return this;

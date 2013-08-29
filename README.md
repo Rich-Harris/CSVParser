@@ -5,7 +5,8 @@ Usage
 -----
 
 ```js
-parser = new Parser( csvData );
+// Both arguments are optional
+parser = new Parser( csvData, options );
 
 parser.array();            // get an array of arrays representing the data
 parser.json();             // get an array of objects, using the first row as keys
@@ -18,6 +19,13 @@ parser
 parser.data();             // get current CSV data
 parser.delimiter();        // get the current delimiter (defaults to ',')
 parser.qualifier();        // get the current qualifier (defaults to '"')
+
+// You can pass in the following initialisation options, with example values
+parser = new CSVParser( csvData, {
+	delimiter: '\t',   // defaults to ','
+	qualifier: "'",    // defaults to '"',
+	strict: false      // defaults to true - throws an error if rows are of uneven length
+});
 ```
 
 Compatibility

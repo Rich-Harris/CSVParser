@@ -25,7 +25,7 @@ parser.qualifier();        // get the current qualifier (defaults to '"')
 parser = new CSVParser( csvData, {
 	delimiter: '\t',       // defaults to ','
 	qualifier: "'",        // defaults to '"',
-	strict: false          // defaults to true - throws an error if rows are of uneven length
+	strict: false          // defaults to true - throws error with rows of uneven length
 });
 ```
 

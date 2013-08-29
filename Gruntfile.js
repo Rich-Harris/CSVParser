@@ -7,15 +7,6 @@ module.exports = function ( grunt ) {
 		pkg: grunt.file.readJSON( 'package.json' ),
 
 		copy: {
-			build: {
-				src: 'src/CSVParser.js',
-				dest: 'build/CSVParser.js',
-				options: {
-					processContent: function ( content ) {
-						return content.replace( '<%= version %>', grunt.template.process( '<%= pkg.version %>' ) );
-					}
-				}
-			},
 			release: {
 				files: [{
 					cwd: 'build/',
@@ -39,6 +30,10 @@ module.exports = function ( grunt ) {
 				process: {
 					data: { version: '<%= pkg.version %>' }
 				}
+			},
+			normal: {
+				src: [ 'src/CSVParser.js' ],
+				dest: 'build/CSVParser.js'
 			},
 			legacy: {
 				src: [ 'src/CSVParser.js', 'src/json2.js' ],
@@ -67,7 +62,7 @@ module.exports = function ( grunt ) {
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
 
-	grunt.registerTask( 'default', [ 'copy:build', 'concat', 'uglify', 'qunit' ]);
+	grunt.registerTask( 'default', [ 'concat', 'uglify', 'qunit' ]);
 	grunt.registerTask( 'release', [ 'default', 'copy:release', 'copy:shortcut' ]);
 
 };

@@ -44,7 +44,8 @@
 	defaults = {
 		delimiter: ',',
 		qualifier: '"',
-		strict: true
+		strict: true,
+		trim: true
 	};
 
 	CSVParser = function ( data, options ) {
@@ -120,7 +121,9 @@
 					},
 					char: function ( offset ) {
 						return this.data.charAt( this.pos + ( offset || 0 ) );
-					}
+					},
+					strict: this._strict,
+					trim: this._trim
 				};
 
 				this._array = getRows( tokenizer, this._strict ) || [];
@@ -168,7 +171,7 @@
 		return null;
 	};
 
-	getRows = function ( tokenizer, strict ) {
+	getRows = function ( tokenizer ) {
 		var rows, row, rowLength;
 
 		row = getRow( tokenizer );
@@ -182,7 +185,7 @@
 		rowLength = row.length;
 
 		while ( getStringMatch( tokenizer, NEWLINE ) && ( row = getRow( tokenizer ) ) ) {
-			if ( strict ) {
+			if ( tokenizer.strict ) {
 				while ( row.length < rowLength ) {
 					row[ row.length ] = '';
 				}
@@ -219,6 +222,10 @@
 
 	getCell = function ( tokenizer ) {
 		var cell, cellData = getQualifiedCell( tokenizer ) || getUnqualifiedCell( tokenizer );
+
+		if ( tokenizer.trim ) {
+			cellData = cellData.trim();
+		}
 		
 		try {
 			cell = JSON.parse( cellData );
@@ -329,6 +336,12 @@
 			}
 
 			return mapped;
+		};
+	}
+
+	if ( !String.prototype.trim ) {
+		String.prototype.trim = function () {
+			return this.replace( /^\s+/, '' ).replace( /\s+$/, '' );
 		};
 	}
 

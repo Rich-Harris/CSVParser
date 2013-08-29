@@ -95,4 +95,11 @@
 		t.deepEqual( parser.json(), [{ one: 1, two: 2, three: 3 }] );
 	});
 
+	test( 'Cells are trimmed by default', function ( t ) {
+		var parser = new CSVParser( 'one ,two, three ," four  "\n1   , 2,3," 4 "' );
+
+		t.deepEqual( parser.array(), [ [ 'one', 'two', 'three', 'four' ], [ 1, 2, 3, 4 ] ] );
+		t.deepEqual( parser.json(), [{ one: 1, two: 2, three: 3, four: 4 }] );
+	});
+
 }());

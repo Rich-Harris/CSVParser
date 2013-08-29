@@ -1,4 +1,4 @@
-// CSVParser.js v0.1.1
+// CSVParser.js v0.1.2
 // ===================
 //
 // Usage examples:
@@ -27,7 +27,9 @@
 	'use strict';
 
 	var CSVParser,
+		defaults,
 		VERSION,
+		NEWLINE,
 		getStringMatch,
 		getRows,
 		getRow,
@@ -37,23 +39,42 @@
 		whitespacePattern,
 		allowWhitespace;
 
-	VERSION = '<%= version %>';
+	VERSION = '0.1.2';
 
-	CSVParser = function ( data ) {
-		// defaults
-		this._d = ',';
-		this._q = '"';
+	defaults = {
+		delimiter: ',',
+		qualifier: '"',
+		strict: true
+	};
 
-		this.data( data || '' );
+	CSVParser = function ( data, options ) {
+		var prop;
+
+		if ( typeof data === 'string' ) {
+			this.data( data );
+		} else {
+			this.data( '' );
+			options = data;
+		}
+
+		if ( !options ) {
+			options = {};
+		}
+
+		for ( prop in defaults ) {
+			if ( defaults.hasOwnProperty( prop ) ) {
+				this[ '_' + prop ] = options.hasOwnProperty( prop ) ? options[ prop ] : defaults[ prop ]; // prepend with _ to avoid collisions with method names
+			}
+		}
 	};
 
 	CSVParser.prototype = {
 		delimiter: function ( delimiter ) {
 			if ( !arguments.length ) {
-				return this._d;
+				return this._delimiter;
 			}
 
-			this._d = delimiter;
+			this._delimiter = delimiter;
 			this._arrayDirty = this._jsonDirty = true;
 
 			return this;
@@ -61,14 +82,14 @@
 
 		qualifier: function ( qualifier ) {
 			if ( !arguments.length ) {
-				return this._q;
+				return this._qualifier;
 			}
 
 			if ( qualifier.length !== 1 ) {
 				throw new Error( 'Qualifiers must be a single character, e.g. "' );
 			}
 
-			this._q = qualifier;
+			this._qualifier = qualifier;
 			this._arrayDirty = this._jsonDirty = true;
 
 			return this;
@@ -79,7 +100,7 @@
 				return this._data;
 			}
 
-			this._data = data || '';
+			this._data = data.replace( '\r\n', NEWLINE );
 			this._arrayDirty = this._jsonDirty = true;
 
 			return this;
@@ -91,18 +112,18 @@
 			if ( this._arrayDirty ) {
 				tokenizer = {
 					data: this._data,
-					delimiter: this._d,
-					qualifier: this._q,
+					delimiter: this._delimiter,
+					qualifier: this._qualifier,
 					pos: 0,
 					remaining: function () {
 						return this.data.substring( this.pos );
 					},
-					nextChar: function () {
-						return this.data.charAt( this.pos );
+					char: function ( offset ) {
+						return this.data.charAt( this.pos + ( offset || 0 ) );
 					}
 				};
 
-				this._array = getRows( tokenizer ) || [];
+				this._array = getRows( tokenizer, this._strict ) || [];
 				this._arrayDirty = false;
 			}
 
@@ -136,6 +157,8 @@
 		}
 	};
 
+	NEWLINE = '\n';
+
 	getStringMatch = function ( tokenizer, string ) {
 		if ( tokenizer.remaining().indexOf( string ) === 0 ) {
 			tokenizer.pos += string.length;
@@ -145,7 +168,7 @@
 		return null;
 	};
 
-	getRows = function ( tokenizer ) {
+	getRows = function ( tokenizer, strict ) {
 		var rows, row, rowLength;
 
 		row = getRow( tokenizer );
@@ -158,13 +181,15 @@
 
 		rowLength = row.length;
 
-		while ( getStringMatch( tokenizer, '\n' ) && ( row = getRow( tokenizer ) ) ) {
-			while ( row.length < rowLength ) {
-				row[ row.length ] = '';
-			}
+		while ( getStringMatch( tokenizer, NEWLINE ) && ( row = getRow( tokenizer ) ) ) {
+			if ( strict ) {
+				while ( row.length < rowLength ) {
+					row[ row.length ] = '';
+				}
 
-			if ( row.length !== rowLength ) {
-				throw new Error( 'Malformed data - all rows must have the same number of cells' );
+				if ( row.length !== rowLength ) {
+					throw new Error( 'Malformed data - all rows must have the same number of cells' );
+				}
 			}
 			
 			rows[ rows.length ] = row;
@@ -205,11 +230,11 @@
 	};
 
 	getQualifiedCell = function ( tokenizer ) {
-		var cellData, open, character, escaped;
+		var cellData, open, character, qualifier, next, closing, escaped;
 
 		allowWhitespace( tokenizer );
 
-		if ( tokenizer.nextChar() !== tokenizer.qualifier ) {
+		if ( tokenizer.char() !== tokenizer.qualifier ) {
 			return null;
 		}
 
@@ -217,9 +242,16 @@
 		open = true;
 		tokenizer.pos += 1;
 
-		while ( open && ( character = tokenizer.nextChar() ) ) {
-			// if we have a qualifier, close the cell...
-			if ( ( character === tokenizer.qualifier ) && !escaped ) {
+		while ( open && ( character = tokenizer.char() ) ) {
+			if ( character === tokenizer.qualifier && !escaped ) {
+				qualifier = true;
+
+				next = tokenizer.char( 1 );
+				closing = !next || ( next === tokenizer.delimiter ) || ( next === NEWLINE );
+			}
+
+			// if we have a qualifier followed by a delimiter/newline, close the cell...
+			if ( qualifier && closing ) {
 				open = false;
 			} else {
 				// otherwise add the character
@@ -247,7 +279,7 @@
 		remaining = tokenizer.remaining();
 
 		delimiterIndex = remaining.indexOf( tokenizer.delimiter );
-		newLineIndex = remaining.indexOf( '\n' ); // TODO what about IE?
+		newLineIndex = remaining.indexOf( NEWLINE );
 
 		// final cell?
 		if ( ( delimiterIndex === -1 ) && ( newLineIndex === -1 ) ) {

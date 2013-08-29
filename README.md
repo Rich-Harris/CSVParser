@@ -5,7 +5,8 @@ Usage
 -----
 
 ```js
-// Both arguments are optional
+// Both arguments are optional. The csvData argument is a string
+// representing the contents of a .csv file
 parser = new Parser( csvData, options );
 
 parser.array();            // get an array of arrays representing the data
@@ -22,9 +23,9 @@ parser.qualifier();        // get the current qualifier (defaults to '"')
 
 // You can pass in the following initialisation options, with example values
 parser = new CSVParser( csvData, {
-	delimiter: '\t',   // defaults to ','
-	qualifier: "'",    // defaults to '"',
-	strict: false      // defaults to true - throws an error if rows are of uneven length
+	delimiter: '\t',       // defaults to ','
+	qualifier: "'",        // defaults to '"',
+	strict: false          // defaults to true - throws an error if rows are of uneven length
 });
 ```
 

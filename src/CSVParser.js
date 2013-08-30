@@ -221,7 +221,13 @@
 	};
 
 	getCell = function ( tokenizer ) {
-		var cell, cellData = getQualifiedCell( tokenizer ) || getUnqualifiedCell( tokenizer );
+		var cell, cellData;
+
+		if ( tokenizer.char() === NEWLINE ) {
+			return '';
+		}
+
+		cellData = getQualifiedCell( tokenizer ) || getUnqualifiedCell( tokenizer );
 
 		if ( tokenizer.trim ) {
 			cellData = cellData.trim();

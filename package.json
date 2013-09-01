@@ -26,6 +26,7 @@
   "bugs": {
     "web": "https://github.com/Rich-Harris/CSVParser/issues"
   },
+  "main": "CSVParser.js",
   "jam": {
     "main": "CSVParser.js",
     "include": [

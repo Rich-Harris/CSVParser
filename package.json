@@ -39,7 +39,7 @@
     ]
   },
   "testling": {
-    "html": "test/index.html",
+    "html": "test/testling.html",
     "browsers": [
       "ie/6..latest",
       "chrome/10.0",

@@ -196,6 +196,10 @@
 	getRows = function ( tokenizer ) {
 		var rows, row, rowLength;
 
+		if ( !tokenizer.data ) {
+			return [];
+		}
+
 		row = getRow( tokenizer );
 
 		if ( row ) {
@@ -226,19 +230,11 @@
 	getRow = function ( tokenizer ) {
 		var row, cell;
 
-		if ( tokenizer.char() === tokenizer.delimiter ) {
-			row = [ '' ];
+		if ( !tokenizer.char() || newLinePattern.test( tokenizer.remaining() ) ) {
+			return null;
 		}
 
-		else {
-			cell = getCell( tokenizer );
-
-			if ( cell ) {
-				row = [ cell ];
-			} else {
-				return null;
-			}
-		}
+		row = [ getCell( tokenizer ) ];
 
 		while ( getDelimiter( tokenizer ) ) {
 			cell = getCell( tokenizer );

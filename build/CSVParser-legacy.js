@@ -1,4 +1,4 @@
-// CSVParser.js v0.1.2
+// CSVParser.js v0.1.3
 // ===================
 //
 // Usage examples:
@@ -29,8 +29,11 @@
 	var CSVParser,
 		defaults,
 		VERSION,
-		NEWLINE,
-		getStringMatch,
+		LINE_FEED,
+		CARRIAGE_RETURN_LINE_FEED,
+		getDelimiter,
+		newLinePattern,
+		getNewline,
 		getRows,
 		getRow,
 		getCell,
@@ -39,12 +42,13 @@
 		whitespacePattern,
 		allowWhitespace;
 
-	VERSION = '0.1.2';
+	VERSION = '0.1.3';
 
 	defaults = {
 		delimiter: ',',
 		qualifier: '"',
-		strict: true
+		strict: true,
+		trim: true
 	};
 
 	CSVParser = function ( data, options ) {
@@ -100,7 +104,7 @@
 				return this._data;
 			}
 
-			this._data = data.replace( /\r\n/g, NEWLINE );
+			this._data = data;
 			this._arrayDirty = this._jsonDirty = true;
 
 			return this;
@@ -120,7 +124,9 @@
 					},
 					char: function ( offset ) {
 						return this.data.charAt( this.pos + ( offset || 0 ) );
-					}
+					},
+					strict: this._strict,
+					trim: this._trim
 				};
 
 				this._array = getRows( tokenizer, this._strict ) || [];
@@ -157,18 +163,37 @@
 		}
 	};
 
-	NEWLINE = '\n';
+	LINE_FEED = '\n';
+	CARRIAGE_RETURN_LINE_FEED = '\r\n';
 
-	getStringMatch = function ( tokenizer, string ) {
-		if ( tokenizer.remaining().indexOf( string ) === 0 ) {
-			tokenizer.pos += string.length;
-			return string;
+	getDelimiter = function ( tokenizer ) {
+		if ( tokenizer.char() === tokenizer.delimiter ) {
+			tokenizer.pos += 1;
+			return tokenizer.delimiter;
 		}
 
 		return null;
 	};
 
-	getRows = function ( tokenizer, strict ) {
+	newLinePattern = /^\r?\n/;
+
+	getNewline = function ( tokenizer ) {
+		var remaining = tokenizer.remaining();
+
+		if ( remaining.substr( 0, 2 ) === CARRIAGE_RETURN_LINE_FEED ) {
+			tokenizer.pos += 2;
+			return CARRIAGE_RETURN_LINE_FEED;
+		}
+
+		if ( remaining.charAt( 0 ) === LINE_FEED ) {
+			tokenizer.pos += 1;
+			return LINE_FEED;
+		}
+
+		return null;
+	};
+
+	getRows = function ( tokenizer ) {
 		var rows, row, rowLength;
 
 		row = getRow( tokenizer );
@@ -181,8 +206,8 @@
 
 		rowLength = row.length;
 
-		while ( getStringMatch( tokenizer, NEWLINE ) && ( row = getRow( tokenizer ) ) ) {
-			if ( strict ) {
+		while ( getNewline( tokenizer ) && ( row = getRow( tokenizer ) ) ) {
+			if ( tokenizer.strict ) {
 				while ( row.length < rowLength ) {
 					row[ row.length ] = '';
 				}
@@ -201,15 +226,21 @@
 	getRow = function ( tokenizer ) {
 		var row, cell;
 
-		cell = getCell( tokenizer );
-
-		if ( cell ) {
-			row = [ cell ];
-		} else {
-			return null;
+		if ( tokenizer.char() === tokenizer.delimiter ) {
+			row = [ '' ];
 		}
 
-		while ( getStringMatch( tokenizer, tokenizer.delimiter ) ) {
+		else {
+			cell = getCell( tokenizer );
+
+			if ( cell ) {
+				row = [ cell ];
+			} else {
+				return null;
+			}
+		}
+
+		while ( getDelimiter( tokenizer ) ) {
 			cell = getCell( tokenizer );
 			row[ row.length ] = cell;
 		}
@@ -218,7 +249,17 @@
 	};
 
 	getCell = function ( tokenizer ) {
-		var cell, cellData = getQualifiedCell( tokenizer ) || getUnqualifiedCell( tokenizer );
+		var cell, cellData;
+
+		if ( getNewline( tokenizer ) ) {
+			return '';
+		}
+
+		cellData = getQualifiedCell( tokenizer ) || getUnqualifiedCell( tokenizer );
+
+		if ( tokenizer.trim ) {
+			cellData = cellData.trim();
+		}
 		
 		try {
 			cell = JSON.parse( cellData );
@@ -230,7 +271,7 @@
 	};
 
 	getQualifiedCell = function ( tokenizer ) {
-		var cellData, open, character, qualifier, next, closing, escaped;
+		var cellData, open, character, next, remaining;
 
 		allowWhitespace( tokenizer );
 
@@ -243,43 +284,63 @@
 		tokenizer.pos += 1;
 
 		while ( open && ( character = tokenizer.char() ) ) {
-			if ( character === tokenizer.qualifier && !escaped ) {
-				qualifier = true;
+			
+			// if we encounter a qualifier...
+			if ( character === tokenizer.qualifier ) {
+				tokenizer.pos += 1;
 
-				next = tokenizer.char( 1 );
-				closing = !next || ( next === tokenizer.delimiter ) || ( next === NEWLINE );
+				remaining = tokenizer.remaining();
+				next = remaining[0];
+
+				// it may be the closing qualifier
+				if ( !next || next === tokenizer.delimiter || newLinePattern.test( remaining ) ) {
+					open = false;
+				}
+
+				// ...it may be escaping the next character
+				else if ( next === tokenizer.qualifier ) {
+					cellData += next;
+					tokenizer.pos += 1;
+				}
+
+				// otherwise it's not escaped but isn't closing the cell - it's not
+				// RFC 4180 compliant but worse things happen at sea
+				else {
+					cellData += character;
+				}
 			}
 
-			// if we have a qualifier followed by a delimiter/newline, close the cell...
-			if ( qualifier && closing ) {
-				open = false;
-			} else {
-				// otherwise add the character
+
+			else {
 				cellData += character;
+				tokenizer.pos += 1;
 			}
-
-			// if we have a \ character, escape the one after
-			if ( escaped ) {
-				escaped = false;
-			} else if ( character === '\\' ) {
-				escaped = true;
-			}
-
-			tokenizer.pos += 1;
 		}
 
 		return cellData;
 	};
 
 	getUnqualifiedCell = function ( tokenizer ) {
-		var remaining, cellData, delimiterIndex, newLineIndex, lowestIndex;
+		var remaining, cellData, delimiterIndex, crlfIndex, lfIndex, newLineIndex, lowestIndex;
 
 		allowWhitespace( tokenizer );
 
 		remaining = tokenizer.remaining();
 
+		// find index of next delimiter
 		delimiterIndex = remaining.indexOf( tokenizer.delimiter );
-		newLineIndex = remaining.indexOf( NEWLINE );
+
+		// find index of next newline (which could be \r\n or \n)
+		crlfIndex = remaining.indexOf( CARRIAGE_RETURN_LINE_FEED );
+		lfIndex = remaining.indexOf( LINE_FEED );
+
+		if ( crlfIndex === -1 ) {
+			newLineIndex = lfIndex;
+		} else if ( lfIndex === -1 ) {
+			newLineIndex = crlfIndex;
+		} else {
+			newLineIndex = Math.min( crlfIndex, lfIndex );
+		}
 
 		// final cell?
 		if ( ( delimiterIndex === -1 ) && ( newLineIndex === -1 ) ) {
@@ -329,6 +390,12 @@
 			}
 
 			return mapped;
+		};
+	}
+
+	if ( !String.prototype.trim ) {
+		String.prototype.trim = function () {
+			return this.replace( /^\s+/, '' ).replace( /\s+$/, '' );
 		};
 	}
 

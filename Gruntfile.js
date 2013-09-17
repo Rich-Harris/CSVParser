@@ -22,6 +22,13 @@ module.exports = function ( grunt ) {
 			build: [ 'build/' ]
 		},
 
+		jshint: {
+			options: {
+				jshintrc: '.jshintrc'
+			},
+			files: [ 'tmp/CSVParser.js' ]
+		},
+
 		copy: {
 			tmpToBuild: {
 				files: [{
@@ -83,12 +90,13 @@ module.exports = function ( grunt ) {
 
 	grunt.loadNpmTasks( 'grunt-contrib-watch' );
 	grunt.loadNpmTasks( 'grunt-contrib-clean' );
+	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-contrib-copy' );
 	grunt.loadNpmTasks( 'grunt-contrib-concat' );
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
 
-	grunt.registerTask( 'default', [ 'clean:tmp', 'concat', 'uglify', 'qunit', 'clean:build', 'copy:tmpToBuild' ]);
+	grunt.registerTask( 'default', [ 'clean:tmp', 'concat', 'jshint', 'qunit', 'uglify', 'clean:build', 'copy:tmpToBuild' ]);
 	grunt.registerTask( 'release', [ 'default', 'copy:release', 'copy:shortcut' ]);
 
 };

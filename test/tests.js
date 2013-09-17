@@ -102,4 +102,11 @@
 		t.deepEqual( parser.json(), [{ one: 1, two: 2, three: 3, four: 4 }] );
 	});
 
+	test( 'Rows can have an empty first cell', function ( t ) {
+		var parser = new CSVParser( 'one,two,three,four\n,,3,4' );
+
+		t.deepEqual( parser.array(), [ [ 'one', 'two', 'three', 'four' ], [ '', '', 3, 4 ] ] );
+		t.deepEqual( parser.json(), [{ three: 3, four: 4 }] );
+	});
+
 }());

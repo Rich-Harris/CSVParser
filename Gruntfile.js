@@ -6,7 +6,31 @@ module.exports = function ( grunt ) {
 
 		pkg: grunt.file.readJSON( 'package.json' ),
 
+		watch: {
+			src: {
+				files: [ 'src/**/*.js' ],
+				tasks: [ 'clean:tmp', 'concat' ],
+				options: {
+					interrupt: true,
+					force: true
+				}
+			}
+		},
+
+		clean: {
+			tmp: [ 'tmp/' ],
+			build: [ 'build/' ]
+		},
+
 		copy: {
+			tmpToBuild: {
+				files: [{
+					cwd: 'tmp/',
+					src: [ '**' ],
+					expand: true,
+					dest: 'build/'
+				}]
+			},
 			release: {
 				files: [{
 					cwd: 'build/',
@@ -33,22 +57,22 @@ module.exports = function ( grunt ) {
 			},
 			normal: {
 				src: [ 'src/CSVParser.js' ],
-				dest: 'build/CSVParser.js'
+				dest: 'tmp/CSVParser.js'
 			},
 			legacy: {
 				src: [ 'src/CSVParser.js', 'src/json2.js' ],
-				dest: 'build/CSVParser-legacy.js'
+				dest: 'tmp/CSVParser-legacy.js'
 			}
 		},
 
 		uglify: {
 			main: {
-				src: 'build/CSVParser.js',
-				dest: 'build/CSVParser.min.js'
+				src: 'tmp/CSVParser.js',
+				dest: 'tmp/CSVParser.min.js'
 			},
 			min: {
-				src: 'build/CSVParser-legacy.js',
-				dest: 'build/CSVParser-legacy.min.js'
+				src: 'tmp/CSVParser-legacy.js',
+				dest: 'tmp/CSVParser-legacy.min.js'
 			}
 		},
 
@@ -57,12 +81,14 @@ module.exports = function ( grunt ) {
 		}
 	});
 
+	grunt.loadNpmTasks( 'grunt-contrib-watch' );
+	grunt.loadNpmTasks( 'grunt-contrib-clean' );
 	grunt.loadNpmTasks( 'grunt-contrib-copy' );
 	grunt.loadNpmTasks( 'grunt-contrib-concat' );
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
 
-	grunt.registerTask( 'default', [ 'concat', 'uglify', 'qunit' ]);
+	grunt.registerTask( 'default', [ 'clean:tmp', 'concat', 'uglify', 'qunit', 'clean:build', 'copy:tmpToBuild' ]);
 	grunt.registerTask( 'release', [ 'default', 'copy:release', 'copy:shortcut' ]);
 
 };

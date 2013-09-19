@@ -109,4 +109,11 @@
 		t.deepEqual( parser.json(), [{ three: 3, four: 4 }] );
 	});
 
+	test( 'Rows can have an empty final cell', function ( t ) {
+		var parser = new CSVParser( 'one,two,three\n1,2,\n4,5,6' );
+
+		t.deepEqual( parser.array(), [ [ 'one', 'two', 'three' ], [ 1, 2, '' ], [ 4, 5, 6 ] ] );
+		t.deepEqual( parser.json(), [{ one: 1, two: 2 }, { one: 4, two: 5, three: 6 }] );
+	});
+
 }());

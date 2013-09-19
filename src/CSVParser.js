@@ -3,19 +3,28 @@
 //
 // Usage examples:
 //
-//     parser = new Parser( csvData );
-//
-//     parser.array();            // get an array of arrays representing the data
-//     parser.json();             // get an array of objects, using the first row as keys
-//
+//     Both arguments are optional. The csvData argument is a string
+//     representing the contents of a .csv file
+//     parser = new Parser( csvData, options );
+
+//     parser.array();          // get an array of arrays representing the data
+//     parser.json();           // get an array of objects, using the first row as keys
+
 //     parser
-//         .data( newCsvData )    // change data
-//         .delimiter( '\t' )     // change delimiter from comma to tab
-//         .qualifier( "'" );     // change qualifier from double to single quotes
-//
-//     parser.data();             // get current CSV data
-//     parser.delimiter();        // get the current delimiter (defaults to ',')
-//     parser.qualifier();        // get the current qualifier (defaults to '"')
+//       .data( newCsvData )    // change data
+//       .delimiter( '\t' )     // change delimiter from comma to tab
+//       .qualifier( "'" );     // change qualifier from double to single quotes
+
+//     parser.data();           // get current CSV data
+//     parser.delimiter();      // get the current delimiter (defaults to ',')
+//     parser.qualifier();      // get the current qualifier (defaults to '"')
+
+//     // You can pass in the following initialisation options, with example values
+//     parser = new CSVParser( csvData, {
+//       delimiter: '\t',       // defaults to ','
+//       qualifier: "'",        // defaults to '"',
+//       strict: false          // defaults to true - throws error with rows of uneven length
+//     });
 //
 // ===================
 //
@@ -245,9 +254,12 @@
 	};
 
 	getCell = function ( tokenizer ) {
-		var cell, cellData;
+		var cell, cellData, start;
+
+		start = tokenizer.pos;
 
 		if ( getNewline( tokenizer ) ) {
+			tokenizer.pos = start;
 			return '';
 		}
 

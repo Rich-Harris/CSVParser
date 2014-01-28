@@ -116,4 +116,11 @@
 		t.deepEqual( parser.json(), [{ one: 1, two: 2 }, { one: 4, two: 5, three: 6 }] );
 	});
 
+	test( 'Regression test #1', function ( t ) {
+		var parser = new CSVParser( 'id,name,address,lon,lat,zip\nMEW,Middlefield-Ellis-Whisman Study Area,,-122.0819,37.3894,\nKYD005009923,CALGON CARBON CORPORATION,"Big Sandy Plant, Route 23, Cattletsburg, KY",-82.591389,38.340278,41129' );
+
+		t.deepEqual( parser.array(), [["id","name","address","lon","lat","zip"],["MEW","Middlefield-Ellis-Whisman Study Area","",-122.0819,37.3894,""],["KYD005009923","CALGON CARBON CORPORATION","Big Sandy Plant, Route 23, Cattletsburg, KY",-82.591389,38.340278,41129]]  );
+		t.deepEqual( parser.json(), [{"id":"MEW","name":"Middlefield-Ellis-Whisman Study Area","lon":-122.0819,"lat":37.3894},{"id":"KYD005009923","name":"CALGON CARBON CORPORATION","address":"Big Sandy Plant, Route 23, Cattletsburg, KY","lon":-82.591389,"lat":38.340278,"zip":41129}]  );
+	})
+
 }());

@@ -248,6 +248,7 @@
 		var cell, cellData;
 
 		if ( getNewline( tokenizer ) ) {
+			tokenizer.pos -= 1; // step back one, so we can start a new row
 			return '';
 		}
 

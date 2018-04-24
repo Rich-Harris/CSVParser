@@ -1,3 +1,7 @@
+# This project is long since abandoned
+
+---
+
 CSVParser.js
 ============
 
